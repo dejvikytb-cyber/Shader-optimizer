@@ -36,6 +36,12 @@ public final class FrameMonitor {
         workAvgNs = workAvgNs == 0 ? dt : workAvgNs * 0.98 + dt * 0.02;
     }
 
+    /** Used while the render loop is deliberately throttled so those frames do not pollute stats. */
+    public void pause() {
+        lastStart = 0;
+        workStart = System.nanoTime();
+    }
+
     public void reset() {
         size = 0;
         next = 0;

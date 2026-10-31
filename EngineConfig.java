@@ -14,6 +14,11 @@ public final class EngineConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public boolean enabled = true;
+    /** Windows: AboveNormal priority for the game process. */
+    public boolean boostProcessPriority = true;
+    /** Sleep the render loop while the window is not focused (saves GPU/CPU for other apps; no in-game FPS gain). */
+    public boolean throttleWhenUnfocused = true;
+    public int unfocusedFps = 20;
 
     private static Path path() {
         return FabricLoader.getInstance().getConfigDir().resolve("fpsengine.json");

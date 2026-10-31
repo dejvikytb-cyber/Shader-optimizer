@@ -8,8 +8,11 @@ import cz.fpsengine.performance.monitor.FrameMonitor;
 import cz.fpsengine.performance.monitor.FrameStats;
 import cz.fpsengine.performance.monitor.JvmMonitor;
 import cz.fpsengine.performance.monitor.JvmSample;
+import cz.fpsengine.system.SystemInfo;
+import cz.fpsengine.system.WindowsTweaks;
+import org.lwjgl.glfw.GLFW;
 
-/** Central state. All hot-path calls happen on the Minecraft client thread. */
+/** Central state. Hot-path calls happen on the Minecraft client thread. */
 public final class EngineState {
     private static final long SAMPLE_INTERVAL_NS = 5_000_000_000L;
 
@@ -19,6 +22,7 @@ public final class EngineState {
     private static final BottleneckClassifier CLASSIFIER = new BottleneckClassifier();
 
     private static volatile boolean healthy = true;
+    private static boolean glProbed;
     private static long lastSample;
     private static JvmSample lastJvm = JvmSample.EMPTY;
 
@@ -27,6 +31,12 @@ public final class EngineState {
     public static void init() {
         config = EngineConfig.load();
         lastSample = System.nanoTime();
+        SystemInfo.probeAsync();
+        if (isEnabled() && config.boostProcessPriority) WindowsTweaks.setPriority(true);
+    }
+
+    public static EngineConfig config() {
+        return config;
     }
 
     public static boolean isEnabled() {
@@ -41,21 +51,56 @@ public final class EngineState {
         config.enabled = value;
         config.save();
         if (!value) {
-            // Phase 1 modifies no game state; just drop collected data.
             FRAMES.reset();
             CLASSIFIER.reset();
+            WindowsTweaks.setPriority(false); // restore
         } else {
             lastSample = System.nanoTime();
+            if (config.boostProcessPriority) WindowsTweaks.setPriority(true);
         }
+    }
+
+    public static void setBoostPriority(boolean value) {
+        config.boostProcessPriority = value;
+        config.save();
+        if (isEnabled()) WindowsTweaks.setPriority(value);
+    }
+
+    public static void setThrottleUnfocused(boolean value) {
+        config.throttleWhenUnfocused = value;
+        config.save();
+    }
+
+    public static void setUnfocusedFps(int fps) {
+        config.unfocusedFps = Math.max(5, Math.min(60, fps));
+        config.save();
     }
 
     public static void disableAfterFailure() {
         healthy = false;
     }
 
+    private static boolean windowUnfocused() {
+        long w = GLFW.glfwGetCurrentContext();
+        return w != 0L && GLFW.glfwGetWindowAttrib(w, GLFW.GLFW_FOCUSED) == GLFW.GLFW_FALSE;
+    }
+
     public static void onFrameStart() {
         if (!isEnabled()) return;
         try {
+            if (!glProbed) {
+                glProbed = true;
+                SystemInfo.captureGl();
+            }
+            if (config.throttleWhenUnfocused && windowUnfocused()) {
+                FRAMES.pause();
+                try {
+                    Thread.sleep(Math.max(1, 1000 / Math.max(5, config.unfocusedFps)));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                return;
+            }
             FRAMES.frameStart();
         } catch (Throwable t) {
             fail(t);
@@ -81,6 +126,7 @@ public final class EngineState {
         if (healthy) {
             FPSengine.LOGGER.error("FPS Engine hit an error and has deactivated itself", t);
             healthy = false;
+            WindowsTweaks.setPriority(false);
         }
     }
 

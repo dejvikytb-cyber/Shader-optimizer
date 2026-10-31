@@ -4,8 +4,11 @@ import com.mojang.brigadier.CommandDispatcher;
 import cz.fpsengine.compat.CompatReport;
 import cz.fpsengine.performance.monitor.FrameStats;
 import cz.fpsengine.performance.monitor.JvmSample;
+import cz.fpsengine.system.SystemInfo;
+import cz.fpsengine.system.WindowsTweaks;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 
 import java.util.Locale;
@@ -28,12 +31,26 @@ public final class FpsCommand {
                 .then(ClientCommandManager.literal("status").executes(ctx -> {
                     for (String line : status()) ctx.getSource().sendFeedback(Component.literal(line));
                     return 1;
+                }))
+                .then(ClientCommandManager.literal("check").executes(ctx -> {
+                    var lines = Advisor.lines();
+                    if (lines.isEmpty()) lines = java.util.List.of("Nothing to recommend.");
+                    for (String line : lines) ctx.getSource().sendFeedback(Component.literal("- " + line));
+                    return 1;
+                }))
+                .then(ClientCommandManager.literal("gpu").executes(ctx -> {
+                    var src = ctx.getSource();
+                    WindowsTweaks.applyGpuPreferenceAsync(msg ->
+                            Minecraft.getInstance().execute(() -> src.sendFeedback(Component.literal(msg))));
+                    return 1;
                 })));
     }
 
     private static String[] status() {
         FrameStats s = EngineState.frameStats();
         JvmSample j = EngineState.jvm();
+        var sys = SystemInfo.get();
+        var cfg = EngineState.config();
         String state = !EngineState.isHealthy() ? "DEACTIVATED (error, see log)" : EngineState.isEnabled() ? "ON" : "OFF";
         String frames = s.frames() == 0
                 ? "Frames [measured]: not enough data yet"
@@ -48,9 +65,11 @@ public final class FpsCommand {
                 frames,
                 heap,
                 "Bottleneck [heuristic]: " + EngineState.bottleneck().label,
-                "GPU load / VRAM: unavailable (no supported interface)",
+                "CPU: " + sys.cpuName() + " (" + sys.cpuVendor() + ")",
+                "GPU in use [measured]: " + SystemInfo.glRenderer() + " | GPU load/VRAM: unavailable",
+                "Active: process priority boost=" + (cfg.boostProcessPriority && SystemInfo.WINDOWS) + ", unfocused throttle=" + cfg.throttleWhenUnfocused + " (" + cfg.unfocusedFps + " fps)",
                 "Detected mods: " + (CompatReport.lines().isEmpty() ? "none of the known set" : String.join(", ", CompatReport.lines())),
-                "Active render optimizations: none (phase 1 = measurement only)"
+                "Run /fpsengine check for recommendations."
         };
     }
 }

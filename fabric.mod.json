@@ -3,12 +3,13 @@
   "id": "fpsengine",
   "version": "${version}",
   "name": "FPS Engine",
-  "description": "Low-overhead performance analysis and adaptive bottleneck detection for Sodium + Iris setups. Phase 1: measurement, diagnostics and safe compatibility detection.",
+  "description": "Low-overhead performance analysis and adaptive bottleneck detection for Sodium + Iris setups. Windows system tuning (NVIDIA/Intel/AMD aware), diagnostics and Mod Menu settings.",
   "authors": ["FPS Engine contributors"],
   "license": "MIT",
   "environment": "client",
   "entrypoints": {
-    "client": ["cz.fpsengine.FPSengine"]
+    "client": ["cz.fpsengine.FPSengine"],
+    "modmenu": ["cz.fpsengine.gui.ModMenuIntegration"]
   },
   "mixins": ["fpsengine.mixins.json"],
   "depends": {
@@ -19,6 +20,7 @@
   },
   "suggests": {
     "sodium": "*",
-    "iris": "*"
+    "iris": "*",
+    "modmenu": "*"
   }
 }
