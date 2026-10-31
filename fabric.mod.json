@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "fpsengine",
+  "version": "${version}",
+  "name": "FPS Engine",
+  "description": "Low-overhead performance analysis and adaptive bottleneck detection for Sodium + Iris setups. Phase 1: measurement, diagnostics and safe compatibility detection.",
+  "authors": ["FPS Engine contributors"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["cz.fpsengine.FPSengine"]
+  },
+  "mixins": ["fpsengine.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.18.0",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "sodium": "*",
+    "iris": "*"
+  }
+}
