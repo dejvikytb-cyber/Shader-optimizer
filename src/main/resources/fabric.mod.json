@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "fpsengine",
+  "version": "${version}",
+  "name": "FPS Engine",
+  "description": "Low-overhead performance analysis and adaptive bottleneck detection for Sodium + Iris setups. Windows system tuning (NVIDIA/Intel/AMD aware), diagnostics and Mod Menu settings.",
+  "authors": ["FPS Engine contributors"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["cz.fpsengine.FPSengine"],
+    "modmenu": ["cz.fpsengine.gui.ModMenuIntegration"]
+  },
+  "mixins": ["fpsengine.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.18.0",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "sodium": "*",
+    "iris": "*",
+    "modmenu": "*"
+  }
+}

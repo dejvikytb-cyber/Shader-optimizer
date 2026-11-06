@@ -27,7 +27,7 @@ If a dependency cannot be resolved, adjust `gradle.properties` using https://fab
 JDK 21 + Gradle 9.2.1 once: `gradle wrapper --gradle-version 9.2.1`, then `gradlew.bat clean build` (Windows) or `./gradlew clean build` (Linux).
 
 ## Install
-Fabric Loader 0.18+, Fabric API for 1.21.11, optional Mod Menu 17.0.0, optional Sodium + Iris. Put the JAR in `mods/`. Settings: Mod Menu > FPS Engine > configure.
+Fabric Loader 0.18+, Fabric API for 1.21.11, optional Mod Menu 17.0.0, optional Sodium + Iris. Put the JAR in `mods/`. Settings: Mod Menu > FPS Engine > configure. The screen is black/white with animated liquid visuals (waves, bubbles, cursor glow, stretchy toggles, click ripples); the visuals cost nothing in-game because they only draw while the screen is open.
 
 ## Commands
 `/fpsengine on | off | status | check | gpu`
