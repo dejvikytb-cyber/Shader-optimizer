@@ -79,7 +79,7 @@ public final class SystemInfo {
             String cpuName = ident != null ? ident : "unknown";
             List<String> gpus = new ArrayList<>();
             String plan = "";
-            Boolean gameMode = null;
+            Integer gameMode = null;
             Integer hags = null;
             boolean gpuPref = false;
 
