@@ -2,7 +2,7 @@ name: Build FPS Engine
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, fps-engine-build ]
     tags: [ 'v*' ]
   pull_request:
   workflow_dispatch:
@@ -16,26 +16,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v4
+- uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
 
-      - uses: gradle/actions/setup-gradle@v4
+- uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 9.2.1
 
-      - name: Build
+- name: Build
         run: gradle clean build --stacktrace
 
-      - name: Upload JAR
+- name: Upload JAR
         uses: actions/upload-artifact@v4
         with:
           name: FPS-Engine-1.21.11
           path: build/libs/FPS-Engine-1.21.11.jar
           if-no-files-found: error
 
-      - name: Attach JAR to release (tags only)
+- name: Attach JAR to release (tags only)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
